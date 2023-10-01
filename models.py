@@ -20,19 +20,21 @@ class basemodel(Model):
         return out
 
 class non_norm(Model):
-    def __init__(self):
+    def __init__(self, num_classes = 5):
         super(non_norm, self).__init__()
-        self.nl1 = layers.Normalization(axis = -1)
-        self.fc1 = layers.Dense(units = 10, activation = 'relu')
+        # self.nl1 = layers.Normalization(axis = -1)
+        self.fc1 = layers.Dense(units = 8, activation = 'relu')
         self.bn1 = layers.BatchNormalization()
-        self.fc2 = layers.Dense(units = 5, activation = 'relu')
-        self.out = layers.Dense(units = 5, activation = 'softmax')
+        self.fc2 = layers.Dense(units = 16, activation = 'relu')
+        self.fc3 = layers.Dense(units = 32, activation = 'relu')
+        self.out = layers.Dense(units = num_classes, activation = 'softmax')
     
     def call(self, x, training = False, mask = None):
-        out = self.nl1(x)
-        out = self.fc1(out)
+        # out = self.nl1(x)
+        out = self.fc1(x)
         out = self.bn1(out)
         out = self.fc2(out)
+        out = self.fc3(out)
         out = self.out(out)
         return out
 
