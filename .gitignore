@@ -55,6 +55,7 @@ stash/
 # models
 /model/
 /model_plot/
+/model_weights/
 # datas
 /road_data/
 
