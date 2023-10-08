@@ -6,7 +6,7 @@ import keras
 class basemodel(Model):
     def __init__(self, num_classes = 5):
         super(basemodel, self).__init__()
-        self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
+        # self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
         # self.nl1 = layers.Normalization(axis = -1)
         self.fc1 = layers.Dense(units = 8, activation = 'relu')
         self.bn1 = layers.BatchNormalization()
@@ -16,8 +16,8 @@ class basemodel(Model):
         self.out = layers.Dense(units = num_classes, activation = 'softmax')
     
     def call(self, x, training = False, mask = None):
-        out = self.nl1(x)
-        out = self.fc1(out)
+        # out = self.nl1(x)
+        out = self.fc1(x)
         out = self.bn1(out)
         out = self.fc2(out)
         out = self.fc3(out)
@@ -169,3 +169,33 @@ class Resnet_regression(tf.keras.Model):
         x = self.fc3(x)
         x = self.fc4(x)
         return x
+    
+
+def build_resnet(filter_in_list, filter_out_list, kernel_size, out_nums=17):
+    # 입력 레이어
+    input_layer = layers.Input(shape=(301, 1))  # 입력 데이터의 shape에 따라 수정해야 합니다.
+
+    # Normalization 레이어
+    # nl = layers.BatchNormalization(axis=-1)(input_layer)
+
+    # Resnet 레이어 생성
+    # x = nl
+    x = input_layer
+    for filter_in, filter_out in zip(filter_in_list, filter_out_list):
+        x = ResidualUnit(filter_in, filter_out, kernel_size)(x)
+
+    # Flatten 레이어
+    x = layers.Flatten()(x)
+
+    # Fully Connected 레이어
+    x = layers.Dense(units=128, activation='relu')(x)
+    x = layers.Dense(units=64, activation='relu')(x)
+    x = layers.Dense(units=32, activation='relu')(x)
+    
+    # 출력 레이어
+    output_layer = layers.Dense(units=out_nums, activation='softmax')(x)
+
+    # Functional 모델 생성
+    model = tf.keras.models.Model(inputs=input_layer, outputs=output_layer)
+    
+    return model
