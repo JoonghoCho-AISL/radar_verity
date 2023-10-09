@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import Model
-import keras
+from tensorflow import keras
 
 class basemodel(Model):
     def __init__(self, num_classes = 5):
@@ -28,7 +28,7 @@ class basemodel(Model):
 class basemodel_regression(Model):
     def __init__(self):
         super(basemodel_regression, self).__init__()
-        self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
+        # self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
         # self.nl1 = layers.Normalization(axis = -1)
         self.fc1 = layers.Dense(units = 8, activation = keras.layers.LeakyReLU(alpha=0.01))
         self.bn1 = layers.BatchNormalization()
@@ -38,7 +38,7 @@ class basemodel_regression(Model):
         self.out = layers.Dense(units = 1)
     
     def call(self, x, training = False, mask = None):
-        out = self.nl1(x)
+        # out = self.nl1(x)
         out = self.fc1(out)
         out = self.bn1(out)
         out = self.fc2(out)
@@ -129,7 +129,6 @@ class ResnetLayer(tf.keras.Model):
 class Resnet(tf.keras.Model):
     def __init__(self, filter_in, filters, kernel_size, out_nums=17):
         super(Resnet, self).__init__()
-        # self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
         # self.nl = layers.Normalization(axis = -1)
         self.resnet_layer = ResnetLayer(filter_in, filters, kernel_size)
         self.flatten = layers.Flatten()
@@ -139,7 +138,7 @@ class Resnet(tf.keras.Model):
         self.fc4 = layers.Dense(units = out_nums, activation = 'softmax')
     
     def call(self, x, training=False, mask=None):
-        # x = self.nl1(x)
+        # x = self.nl(x)
         x = self.resnet_layer(x, training=training)
         x = self.flatten(x)
         x = self.fc1(x)
@@ -151,8 +150,7 @@ class Resnet(tf.keras.Model):
 class Resnet_regression(tf.keras.Model):
     def __init__(self, filter_in, filters, kernel_size, out_nums=17):
         super(Resnet_regression, self).__init__()
-        # self.nl = layers.Normalization(axis = -1)
-        self.nl1 = layers.experimental.preprocessing.Normalization(axis = -1)
+        self.nl = layers.Normalization(axis = -1)
         self.resnet_layer = ResnetLayer(filter_in, filters, kernel_size)
         self.flatten = layers.Flatten()
         self.fc1 = layers.Dense(units = 128, activation = 'relu')
@@ -161,7 +159,7 @@ class Resnet_regression(tf.keras.Model):
         self.fc4 = layers.Dense(units = 1)
     
     def call(self, x, training=False, mask=None):
-        x = self.nl1(x)
+        x = self.nl(x)
         x = self.resnet_layer(x, training=training)
         x = self.flatten(x)
         x = self.fc1(x)

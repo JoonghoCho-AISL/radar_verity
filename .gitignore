@@ -34,7 +34,7 @@ docs/_build
 
 # LaTeX
 *.aux
-*.fdb_latexmk
+*.fdb_latex1k
 *.fls
 *.log
 *.pdf
