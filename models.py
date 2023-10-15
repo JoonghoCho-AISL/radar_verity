@@ -147,6 +147,29 @@ class Resnet(tf.keras.Model):
         x = self.fc4(x)
         return x
     
+class Resnet_pool(tf.keras.Model):
+    def __init__(self, filter_in, filters, kernel_size, out_nums=17):
+        super(Resnet_pool, self).__init__()
+        # self.nl = layers.Normalization(axis = -1)
+        self.resnet_layer = ResnetLayer(filter_in, filters, kernel_size)
+        self.maxpool = layers.MaxPool1D(pool_size=2, strides=2, padding='valid')
+        self.flatten = layers.Flatten()
+        self.fc1 = layers.Dense(units = 128, activation = 'relu')
+        self.fc2 = layers.Dense(units = 64, activation = 'relu')
+        self.fc3 = layers.Dense(units = 32, activation = 'relu')
+        self.fc4 = layers.Dense(units = out_nums, activation = 'softmax')
+    
+    def call(self, x, training=False, mask=None):
+        # x = self.nl(x)
+        x = self.resnet_layer(x, training=training)
+        x = self.maxpool(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = self.fc2(x)
+        x = self.fc3(x)
+        x = self.fc4(x)
+        return x
+
 class Resnet_regression(tf.keras.Model):
     def __init__(self, filter_in, filters, kernel_size, out_nums=17):
         super(Resnet_regression, self).__init__()
