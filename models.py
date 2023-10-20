@@ -93,9 +93,9 @@ class ResidualUnit(tf.keras.Model):
     def __init__(self, filter_in, filter_out, kernel_size):
         super(ResidualUnit, self).__init__()
 
-        self.bn1 = keras.layers.BatchNormalization()
+        self.bn1 = keras.layers.BatchNormalization(axis=-1)
         self.conv1 = keras.layers.Conv1D(filter_out, kernel_size, padding='same')
-        self.bn2 = keras.layers.BatchNormalization()
+        self.bn2 = keras.layers.BatchNormalization(axis=-1)
         self.conv2 = keras.layers.Conv1D(filter_out, kernel_size, padding='same')
 
         if filter_in == filter_out:
@@ -226,3 +226,68 @@ def build_resnet(filter_in_list, filter_out_list, kernel_size, out_nums=17):
     model = tf.keras.models.Model(inputs=input_layer, outputs=output_layer)
     
     return model
+
+
+class ResidualUnit2D(tf.keras.Model):
+    def __init__(self, filter_in, filter_out, kernel_size):
+        super(ResidualUnit2D, self).__init__()
+
+        self.bn1 = keras.layers.BatchNormalization(axis=-1)
+        self.conv1 = keras.layers.Conv2D(filter_out, kernel_size, padding='same')
+        self.bn2 = keras.layers.BatchNormalization(axis=-1)
+        self.conv2 = keras.layers.Conv2D(filter_out, kernel_size, padding='same')
+
+        if filter_in == filter_out:
+            self.identity = lambda x: x
+        else:
+            self.identity = keras.layers.Conv2D(filter_out, 1, padding = 'same')
+        
+    def call(self, x, training=False, mask = None):
+        h = self.bn1(x, training=training)
+        h = tf.nn.relu(h)
+        h = self.conv1(h)
+
+        h = self.bn2(h, training=training)
+        h = tf.nn.relu(h)
+        h = self.conv2(h)
+        return self.identity(x) + h
+
+class ResnetLayer2D(tf.keras.Model):
+    def __init__(self, filter_in, filters, kernel_size):
+        super(ResnetLayer2D, self).__init__()
+        self.sequence = list()
+
+        for f_in, f_out in zip([filter_in] + list(filters), filters):
+            self.sequence.append(ResidualUnit2D(f_in, f_out, kernel_size))
+
+    def call(self, x, training=False , mask=None):
+        for unit in self.sequence:
+            x = unit(x, training=training)
+        return x
+    
+class Resnet2D(tf.keras.Model):
+    def __init__(self, filter_in, filters, kernel_size, out_nums=17):
+        super(Resnet2D, self).__init__()
+        # self.nl = layers.Normalization(axis = -1)
+        self.resnet_layer = ResnetLayer2D(filter_in, filters, kernel_size)
+        self.flatten = layers.Flatten()
+        self.fc1 = layers.Dense(units = 128, activation = 'relu')
+        # self.dp1 = layers.Dropout(0.1)
+        self.fc2 = layers.Dense(units = 64, activation = 'relu')
+        self.dp2 = layers.Dropout(0.1)
+        self.fc3 = layers.Dense(units = 32, activation = 'relu')
+        # self.dp3 = layers.Dropout(0.1)
+        self.fc4 = layers.Dense(units = out_nums, activation = 'softmax')
+    
+    def call(self, x, training=False, mask=None):
+        # x = self.nl(x)
+        x = self.resnet_layer(x, training=training)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        # x = self.dp1(x)
+        x = self.fc2(x)
+        x = self.dp2(x)
+        x = self.fc3(x)
+        # x = self.dp3(x)
+        x = self.fc4(x)
+        return x
