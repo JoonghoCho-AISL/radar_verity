@@ -27,9 +27,9 @@ def crt_sub(IP, aename, path, cnt_name):
                     "rqi": rand,
                     "pc":{
                         "m2m:sub": {
-                            "rn": cnt_name, 
+                            "rn": 'test', 
                             "enc":{"net":[3]},
-                            "nu":["mqtt://" + IP + "/"+aename + cnt_name+"?ct=json"]
+                            "nu":["mqtt://" + IP + "/jhjhjh"+"?ct=json"]
                             }
                         }
                 }
@@ -66,4 +66,5 @@ if __name__ == "__main__":
 
     # sub_name = cnt_name
 
-    publishing(IP , Port, aename, path, cnt_name)
+    # publishing(IP , Port, aename, path, cnt_name)
+    crt_sub(IP, aename, path, cnt_name)

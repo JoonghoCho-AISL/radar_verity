@@ -133,8 +133,11 @@ class Resnet(tf.keras.Model):
         self.resnet_layer = ResnetLayer(filter_in, filters, kernel_size)
         self.flatten = layers.Flatten()
         self.fc1 = layers.Dense(units = 128, activation = 'relu')
+        # self.dp1 = layers.Dropout(0.1)
         self.fc2 = layers.Dense(units = 64, activation = 'relu')
+        self.dp2 = layers.Dropout(0.1)
         self.fc3 = layers.Dense(units = 32, activation = 'relu')
+        # self.dp3 = layers.Dropout(0.1)
         self.fc4 = layers.Dense(units = out_nums, activation = 'softmax')
     
     def call(self, x, training=False, mask=None):
@@ -142,8 +145,11 @@ class Resnet(tf.keras.Model):
         x = self.resnet_layer(x, training=training)
         x = self.flatten(x)
         x = self.fc1(x)
+        # x = self.dp1(x)
         x = self.fc2(x)
+        x = self.dp2(x)
         x = self.fc3(x)
+        # x = self.dp3(x)
         x = self.fc4(x)
         return x
     
